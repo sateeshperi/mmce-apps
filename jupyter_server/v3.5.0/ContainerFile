@@ -1,0 +1,21 @@
+FROM quay.io/centos/centos:stream9
+WORKDIR /root
+RUN yum install python39 python3-pip -y && yum clean all && rm -rf /var/cache/yum
+
+RUN pip install --no-cache-dir notebook==6.5.2 jupyterlab==3.5.0 && jupyter notebook --generate-config && jupyter-lab --generate-config
+
+RUN mkdir /opt/jupyter && mv /root/.jupyter/jupyter_notebook_config.py /opt/jupyter && mv /root/.jupyter/jupyter_lab_config.py /opt/jupyter
+RUN sed -i -e "s/# c.NotebookApp.open_browser = True/c.NotebookApp.open_browser = False/g" /opt/jupyter/jupyter_notebook_config.py
+RUN sed -i -e "s/# c.NotebookApp.ip = 'localhost'/c.NotebookApp.ip = '\*'/g" /opt/jupyter/jupyter_notebook_config.py
+RUN sed -i -e "s/# c.NotebookApp.password = ''/c.NotebookApp.password = 'argon2:\$argon2id\$v=19\$m=10240,t=10,p=8\$6i6S9NPPvmEHvl0YKy2ebA\$V\+\/SLso1Fi2RIIr\+K\/bMGOSx4PIQxeaJ2n1OGpaCD1Y'/g" /opt/jupyter/jupyter_notebook_config.py
+RUN sed -i -e "s/# c.ServerApp.open_browser = True/c.ServerApp.open_browser = False/g" /opt/jupyter/jupyter_lab_config.py
+RUN sed -i -e "s/# c.ServerApp.ip = 'localhost'/c.ServerApp.ip = '\*'/g" /opt/jupyter/jupyter_lab_config.py
+RUN sed -i -e "s/# c.ServerApp.password = ''/c.ServerApp.password = 'argon2:\$argon2id\$v=19\$m=10240,t=10,p=8\$6i6S9NPPvmEHvl0YKy2ebA\$V\+\/SLso1Fi2RIIr\+K\/bMGOSx4PIQxeaJ2n1OGpaCD1Y'/g" /opt/jupyter/jupyter_lab_config.py
+
+COPY init_jupyter_env.sh /bin
+COPY set_jupyter_password.py /opt/jupyter
+RUN chmod +x /bin/init_jupyter_env.sh
+RUN chmod 777 /home
+COPY run_jupyter.sh /opt/jupyter
+RUN chmod +x /opt/jupyter/run_jupyter.sh
+ENTRYPOINT /opt/jupyter/run_jupyter.sh
