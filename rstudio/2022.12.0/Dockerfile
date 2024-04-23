@@ -1,7 +1,5 @@
 FROM quay.io/centos/centos:stream8
-
 WORKDIR /root
-
 RUN yum update -y && \
     yum install -y epel-release dnf-plugins-core && \
     yum config-manager --set-enabled powertools && \
@@ -19,9 +17,7 @@ RUN R -e 'install.packages("BiocManager", repos="https://cran.rstudio.com/")' &&
 RUN wget -q https://download2.rstudio.org/server/centos7/x86_64/rstudio-server-rhel-2022.12.0-353-x86_64.rpm \
     && yum install rstudio-server-rhel-2022.12.0-353-x86_64.rpm -y \
     && rm -f rstudio-server-rhel-2022.12.0-353-x86_64.rpm
-
 COPY run_rstudio.sh /root
-
 RUN chmod +x run_rstudio.sh
 
 ENTRYPOINT ./run_rstudio.sh
